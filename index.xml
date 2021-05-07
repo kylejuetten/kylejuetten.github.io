@@ -27,6 +27,18 @@ In this data analysis project I am interested in examining the impact of winning
     </item>
     
     <item>
+      <title>Overview of website content</title>
+      <link>/post/1/01/01/overview-of-website-content/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/post/1/01/01/overview-of-website-content/</guid>
+      <description>Here is my post. I finally got it to work. Woo Hoo
+#Check it out 2+2 ## [1] 4 This website contains my data analysis projects from the computational biology and bioinformatics course taught at UT Austin.
+The course aims to showcase the power of R for statistics and data sciences.
+Below you will find the links to my two projects. The first being an exploratory analysis into the impacts of winning a major sports championship on the birth rate of the winning state.</description>
+    </item>
+    
+    <item>
       <title>Projects</title>
       <link>/projects/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

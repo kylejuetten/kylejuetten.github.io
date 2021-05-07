@@ -1,0 +1,27 @@
+---
+title: Overview of website content
+description: 'blah blah blah'
+
+---
+
+Here is my post. I finally got it to work. Woo Hoo
+
+```{r}
+#Check it out
+
+2+2
+
+
+```
+
+This website contains my data analysis projects from the computational biology and bioinformatics course taught at UT Austin.
+
+The course aims to showcase the power of R for statistics and data sciences.
+
+Below you will find the links to my two projects. The first being an exploratory analysis into the impacts of winning a major sports championship on the birth rate of the winning state. The second project aims to use different regression models (linear, logistic, LASSO) to investigate if there are any predictive variables as to who survived the Titanic.
+
+[Link to project 1](/project/project1/)
+
+[Link to project 2](/project/project2/)
+
+[Link to google](https://www.google.com)
