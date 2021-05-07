@@ -7,7 +7,7 @@
     <meta name="author" content="Kyle Juetten" />
     
     <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
-    <title>Project 1</title>
+    <title>Impacts of Winning a Championship on Birth Rates</title>
     <meta name="generator" content="Hugo 0.83.1" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="../../css/main.css" />
@@ -43,8 +43,6 @@
         
         <li><a href="../../projects/">PROJECTS</a></li>
         
-        <li><a href="../../resume/">RESUME</a></li>
-        
       
       </ul>
     </div>
@@ -54,13 +52,13 @@
       <div class="container">
         <div class="blog-post">
           <h3>
-            <strong><a href="../../project/project1/">Project 1</a></strong>
+            <strong><a href="../../project/project1/">Impacts of Winning a Championship on Birth Rates</a></strong>
           </h3>
         </div>
  
 <div class="blog-title">
           <h4>
-         December 1, 2020 
+         January 1, 0001 
             &nbsp;&nbsp;
             
           </h4>
@@ -70,10 +68,366 @@
           <div class="panel-body">
             <div class="blogpost">
               
+<script src="../../rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="../../rmarkdown-libs/plotly-binding/plotly.js"></script>
+<script src="../../rmarkdown-libs/typedarray/typedarray.min.js"></script>
+<script src="../../rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="../../rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="../../rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+<link href="../../rmarkdown-libs/plotly-htmlwidgets-css/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="../../rmarkdown-libs/plotly-main/plotly-latest.min.js"></script>
 
 
-<div id="test-project-1" class="section level2">
-<h2>Test Project 1</h2>
+<div id="kyle-juetten-kjj865" class="section level3">
+<h3>Kyle Juetten, kjj865</h3>
+<p><strong>Introduction</strong></p>
+<p><em>In this data analysis project I am interested in examining the impact of winning a championship in one of U.S.A’s four major sports leagues (NBA, NHL, NFL, MLB) on the birth rate/total fertility rate of the winning state. The idea for this project came from a commercial I saw during the world cup many years ago about “world cup babies” and how the birth rates in the countries who win the world cup increase the following year. I wanted to explore this trend in the U.S. to see if it still holds. The birth rate data (total fertility rate, number of births, % population change) was obtained from the Population Reference Bureau (PRB) while the information on sports champions and the states they came from was acquired by combining the data from the respective sports league websites (i.e. NFL.com, MLB.com, etc.) It is worth noting that the % population change data was given for time periods (i.e. 2000-2010, 2011-2018) so it will not be an accurate indicator of year to year change. I think total fertility rate (TFR) and the number of births will be the best measuring statistics for this trend as opposed to percent population change as this indicator takes into account people moving to the state, deaths, and other factors not associated with births.</em></p>
+<pre class="r"><code>BirthRates &lt;- read_excel(&quot;Birth Rates.xlsx&quot;)
+
+Champions &lt;- read_excel(&quot;Champions.xlsx&quot;)
+
+# 3 numeric variables in data sets = year, Total Fertility
+# Rate, Number of Births</code></pre>
+<pre class="r"><code>head(BirthRates)</code></pre>
+<pre><code>## # A tibble: 6 x 7
+##    FIPS NAME    TYPE   YEAR   TFR BIRTHS `POP CHANGE`
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt;
+## 1     1 Alabama State  2000  2.02  63299        0.075
+## 2     1 Alabama State  2001  1.94  60454        0.075
+## 3     1 Alabama State  2002  1.88  58967        0.075
+## 4     1 Alabama State  2003  1.92  59552        0.075
+## 5     1 Alabama State  2004  1.91  59510        0.075
+## 6     1 Alabama State  2005  1.93  60453        0.075</code></pre>
+<pre class="r"><code>head(Champions)</code></pre>
+<pre><code>## # A tibble: 6 x 9
+##    Year NFL    MLB   NHL   NBA   `NFL State` `MLB State` `NHL State` `NBA State`
+##   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;chr&gt;       &lt;chr&gt;      
+## 1  1970 Colts  Orio… Brui… Knic… MD          MD          MA          NY         
+## 2  1971 Cowbo… Pira… Cana… Bucks TX          PA          &lt;NA&gt;        WI         
+## 3  1972 Dolph… Athl… Brui… Lake… FL          CA          MA          CA         
+## 4  1973 Dolph… Athl… Cana… Knic… FL          CA          &lt;NA&gt;        NY         
+## 5  1974 Steel… Athl… Flye… Celt… PA          CA          PA          MA         
+## 6  1975 Steel… Reds  Flye… Warr… PA          OH          PA          CA</code></pre>
+<p><strong>Tidying: Rearranging Wide/Long</strong></p>
+<pre class="r"><code>Champions2 &lt;- Champions %&gt;% pivot_longer(contains(&quot;State&quot;)) %&gt;% 
+    pivot_wider(names_from = &quot;name&quot;) %&gt;% select(&quot;Year&quot;, &quot;NFL&quot;, 
+    &quot;NFL State&quot;, &quot;MLB&quot;, &quot;MLB State&quot;, &quot;NHL&quot;, &quot;NHL State&quot;, &quot;NBA&quot;, 
+    &quot;NBA State&quot;)
+
+Champions %&gt;% pivot_longer(contains(&quot;State&quot;)) %&gt;% pivot_wider(names_from = &quot;name&quot;) %&gt;% 
+    select(&quot;Year&quot;, &quot;NFL&quot;, &quot;NFL State&quot;, &quot;MLB&quot;, &quot;MLB State&quot;, &quot;NHL&quot;, 
+        &quot;NHL State&quot;, &quot;NBA&quot;, &quot;NBA State&quot;)</code></pre>
+<pre><code>## # A tibble: 51 x 9
+##     Year NFL   `NFL State` MLB   `MLB State` NHL   `NHL State` NBA   `NBA State`
+##    &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;      
+##  1  1970 Colts MD          Orio… MD          Brui… MA          Knic… NY         
+##  2  1971 Cowb… TX          Pira… PA          Cana… &lt;NA&gt;        Bucks WI         
+##  3  1972 Dolp… FL          Athl… CA          Brui… MA          Lake… CA         
+##  4  1973 Dolp… FL          Athl… CA          Cana… &lt;NA&gt;        Knic… NY         
+##  5  1974 Stee… PA          Athl… CA          Flye… PA          Celt… MA         
+##  6  1975 Stee… PA          Reds  OH          Flye… PA          Warr… CA         
+##  7  1976 Raid… CA          Reds  OH          Cana… &lt;NA&gt;        Celt… MA         
+##  8  1977 Cowb… TX          Yank… NY          Cana… &lt;NA&gt;        Trai… OR         
+##  9  1978 Stee… PA          Yank… NY          Cana… &lt;NA&gt;        Bull… &lt;NA&gt;       
+## 10  1979 Stee… PA          Pira… PA          Cana… &lt;NA&gt;        Supe… WA         
+## # … with 41 more rows</code></pre>
+<p><em>Here I am showing how pivot_longer and pivot_wider are inverses of one another. The pivot_longer step puts all of the league state column titles into one (changing number of columns from 9 to 7 and increasing the number of rows from 51 to 204) while the pivot_wider step essentially undoes this and gives each year its own row. The final select step makes the data easier to read with the corresponding state of the team located in the column directly to the right of the team name. This data format was saved as a new data set for joining in the future.</em></p>
+<p><strong>Joining Data Sets</strong></p>
+<pre class="r"><code>BirthRates %&gt;% left_join(Champions2, by = c(YEAR = &quot;Year&quot;)) %&gt;% 
+    mutate(State_Code = state.abb[match(BirthRates$NAME, state.name)]) %&gt;% 
+    select(c(-&quot;FIPS&quot;, -&quot;TYPE&quot;, -&quot;POP CHANGE&quot;)) %&gt;% select(2, 
+    1, 13, 3:12)</code></pre>
+<pre><code>## # A tibble: 950 x 13
+##     YEAR NAME  State_Code   TFR BIRTHS NFL   `NFL State` MLB   `MLB State` NHL  
+##    &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;
+##  1  2000 Alab… AL          2.02  63299 Rave… MD          Yank… NY          Devi…
+##  2  2001 Alab… AL          1.94  60454 Patr… MA          Diam… AZ          Aval…
+##  3  2002 Alab… AL          1.88  58967 Bucc… FL          Ange… CA          Red …
+##  4  2003 Alab… AL          1.92  59552 Patr… MA          Marl… FL          Devi…
+##  5  2004 Alab… AL          1.91  59510 Patr… MA          Red … MA          Ligh…
+##  6  2005 Alab… AL          1.93  60453 Stee… PA          Whit… IL          &lt;NA&gt; 
+##  7  2006 Alab… AL          2.03  63232 Colts IN          Card… MO          Hurr…
+##  8  2007 Alab… AL          2.07  64804 Gian… NY          Red … MA          Ducks
+##  9  2008 Alab… AL          2.06  64546 Stee… PA          Phil… PA          Red …
+## 10  2009 Alab… AL          1.96  62475 Sain… LA          Yank… NY          Peng…
+## # … with 940 more rows, and 3 more variables: NHL State &lt;chr&gt;, NBA &lt;chr&gt;,
+## #   NBA State &lt;chr&gt;</code></pre>
+<pre class="r"><code>Project1Data &lt;- BirthRates %&gt;% left_join(Champions2, by = c(YEAR = &quot;Year&quot;)) %&gt;% 
+    mutate(St_Code = state.abb[match(BirthRates$NAME, state.name)]) %&gt;% 
+    select(c(-&quot;FIPS&quot;, -&quot;TYPE&quot;, -&quot;POP CHANGE&quot;)) %&gt;% select(2, 
+    1, 13, 3:12)</code></pre>
+<p><em>I used left_join here to remove all the Champions data before the year 2000. This is not a problem to remove this data as we would only be able to look at the trend of interest for years containing birth rate data (Years 2000-2018). I then used mutate to create a new column with the state codes associated with the name of the state from the Birth Rates data as this will make it easier to match with the Champions data. I removed the ‘FIPS’ and ‘TYPE’ columns using select as this information was extraneous and repetitive while reordering the data frame to make it more readable. This modified data was then saved as a new dataframe</em></p>
+<p><strong>Wrangling</strong></p>
+<pre class="r"><code>StateSummary &lt;- Project1Data %&gt;% group_by(NAME) %&gt;%
+  summarize(mean(TFR), sd(TFR), mean(BIRTHS), sd(BIRTHS), IQR(TFR), IQR(BIRTHS), min(TFR), min(BIRTHS), max(TFR), max(BIRTHS), median (TFR), median (BIRTHS))
+
+StateSummary</code></pre>
+<pre><code>## # A tibble: 50 x 13
+##    NAME        `mean(TFR)` `sd(TFR)` `mean(BIRTHS)` `sd(BIRTHS)` `IQR(TFR)`
+##    &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;
+##  1 Alabama            1.90    0.0915         60434.        2148.      0.120
+##  2 Alaska             2.29    0.153          10820.         602.      0.225
+##  3 Arizona            2.18    0.282          89558.        6613.      0.415
+##  4 Arkansas           2.04    0.0924         38645.        1272.      0.120
+##  5 California         1.99    0.189         518540        30833.      0.310
+##  6 Colorado           1.96    0.231          67145.        2272.      0.325
+##  7 Connecticut        1.78    0.140          39092.        3036.      0.275
+##  8 Delaware           1.92    0.125          11269.         448.      0.210
+##  9 Florida            1.92    0.166         219572.        9841.      0.285
+## 10 Georgia            2.02    0.174         135655.        7172.      0.295
+## # … with 40 more rows, and 7 more variables: IQR(BIRTHS) &lt;dbl&gt;, min(TFR) &lt;dbl&gt;,
+## #   min(BIRTHS) &lt;dbl&gt;, max(TFR) &lt;dbl&gt;, max(BIRTHS) &lt;dbl&gt;, median(TFR) &lt;dbl&gt;,
+## #   median(BIRTHS) &lt;dbl&gt;</code></pre>
+<pre class="r"><code># Only useful information from summarize in this case is mean and sd, the rest of the functions are to satisfy requirement for using 5 functions inside summarize. In total,
+# I used mean, sd, IQR, min, max, and median inside of summarize.
+
+Project1Data %&gt;% full_join(StateSummary) %&gt;%
+  group_by(NAME) %&gt;% 
+  mutate(TFR_to_mean = TFR/mean(TFR)) %&gt;%
+  mutate(Births_to_mean = BIRTHS/mean(BIRTHS)) %&gt;%
+  mutate(TFR_Pct_Chnge = (TFR/lag(TFR)-1)*100 ) %&gt;%
+  mutate(Births_Pct_Chnge = (BIRTHS/lag(BIRTHS)-1)*100) %&gt;%
+  filter(St_Code == `NFL State`) %&gt;%                             # data for states which won the Superbowls
+  arrange(YEAR) %&gt;%
+  select(1,7,2,4,28,26,5,29,27) %&gt;%
+  filter(Births_Pct_Chnge &gt; 0 | TFR_Pct_Chnge &gt;0) %&gt;%
+  mutate(Births_to_TFR = BIRTHS/TFR)      #This is just to satisfy requirement for computing one variable as function of two others. Value doesn&#39;t signify any important data</code></pre>
+<pre><code>## # A tibble: 7 x 10
+## # Groups:   NAME [5]
+##    YEAR `NFL State` NAME            TFR TFR_Pct_Chnge TFR_to_mean BIRTHS
+##   &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;         &lt;dbl&gt;         &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;
+## 1  2001 MA          Massachusetts  1.81         0.556       1.08   81077
+## 2  2003 MA          Massachusetts  1.74         1.75        1.04   80184
+## 3  2005 PA          Pennsylvania   1.86         0.541       1.02  145383
+## 4  2006 IN          Indiana        2.08         0.971       1.04   88631
+## 5  2007 NY          New York       1.92         1.59        1.06  253451
+## 6  2014 MA          Massachusetts  1.58        -1.25        0.946  71908
+## 7  2015 CO          Colorado       1.75        -1.13        0.892  66581
+## # … with 3 more variables: Births_Pct_Chnge &lt;dbl&gt;, Births_to_mean &lt;dbl&gt;,
+## #   Births_to_TFR &lt;dbl&gt;</code></pre>
+<pre class="r"><code>Project1Data %&gt;% full_join(StateSummary) %&gt;%
+  group_by(NAME) %&gt;% 
+  mutate(TFR_to_mean = TFR/mean(TFR)) %&gt;%
+  mutate(Births_to_mean = BIRTHS/mean(BIRTHS)) %&gt;%
+  mutate(TFR_Pct_Chnge = (TFR/lag(TFR)-1)*100 ) %&gt;%
+  mutate(Births_Pct_Chnge = (BIRTHS/lag(BIRTHS)-1)*100) %&gt;%
+  filter(St_Code == `MLB State`) %&gt;%                             # data for states which won the World Series
+  arrange(YEAR) %&gt;%
+  select(1,9,2,4,28,26,5,29,27) %&gt;%
+  filter(Births_Pct_Chnge &gt; 0 | TFR_Pct_Chnge &gt;0)%&gt;%
+  mutate(Births_to_TFR = BIRTHS/TFR)        #This is just to satisfy requirement for computing one variable as function of two others. Value doesn&#39;t signify any important data</code></pre>
+<pre><code>## # A tibble: 7 x 10
+## # Groups:   NAME [5]
+##    YEAR `MLB State` NAME            TFR TFR_Pct_Chnge TFR_to_mean BIRTHS
+##   &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;         &lt;dbl&gt;         &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;
+## 1  2001 AZ          Arizona        2.64        -0.377       1.21   85597
+## 2  2002 CA          California     2.07        -3.72        1.04  529357
+## 3  2003 FL          Florida        2.01         0.500       1.05  212250
+## 4  2006 MO          Missouri       2.07         4.02        1.06   81385
+## 5  2007 MA          Massachusetts  1.8          1.12        1.08   77967
+## 6  2012 CA          California     1.89        -0.526       0.951 503755
+## 7  2014 CA          California     1.84         0           0.926 502879
+## # … with 3 more variables: Births_Pct_Chnge &lt;dbl&gt;, Births_to_mean &lt;dbl&gt;,
+## #   Births_to_TFR &lt;dbl&gt;</code></pre>
+<pre class="r"><code>Project1Data %&gt;% full_join(StateSummary) %&gt;%
+  group_by(NAME) %&gt;% 
+  mutate(TFR_to_mean = TFR/mean(TFR)) %&gt;%
+  mutate(Births_to_mean = BIRTHS/mean(BIRTHS)) %&gt;%
+  mutate(TFR_Pct_Chnge = (TFR/lag(TFR)-1)*100 ) %&gt;%
+  mutate(Births_Pct_Chnge = (BIRTHS/lag(BIRTHS)-1)*100) %&gt;%
+  filter(St_Code == `NBA State`) %&gt;%                          # data for states which won the NBA championship
+  arrange(YEAR) %&gt;%
+  select(1,13,2,4,28,26,5,29,27) %&gt;%
+  filter(Births_Pct_Chnge &gt; 0 | TFR_Pct_Chnge &gt;0)%&gt;%
+  mutate(Births_to_TFR = BIRTHS/TFR)        #This is just to satisfy requirement for computing one variable as function of two others. Value doesn&#39;t signify any important data</code></pre>
+<pre><code>## # A tibble: 7 x 10
+## # Groups:   NAME [3]
+##    YEAR `NBA State` NAME         TFR TFR_Pct_Chnge TFR_to_mean BIRTHS
+##   &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;      &lt;dbl&gt;         &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;
+## 1  2002 CA          California  2.07        -3.72        1.04  529357
+## 2  2003 TX          Texas       2.35         0           1.06  377476
+## 3  2005 TX          Texas       2.34         0           1.05  385915
+## 4  2006 FL          Florida     2.09         1.46        1.09  236802
+## 5  2007 TX          Texas       2.4          1.69        1.08  407625
+## 6  2013 FL          Florida     1.77         0           0.923 215407
+## 7  2014 TX          Texas       2.09         0.966       0.942 399766
+## # … with 3 more variables: Births_Pct_Chnge &lt;dbl&gt;, Births_to_mean &lt;dbl&gt;,
+## #   Births_to_TFR &lt;dbl&gt;</code></pre>
+<pre class="r"><code>Project1Data %&gt;% full_join(StateSummary) %&gt;%
+  group_by(NAME) %&gt;% 
+  mutate(TFR_to_mean = TFR/mean(TFR)) %&gt;%
+  mutate(Births_to_mean = BIRTHS/mean(BIRTHS)) %&gt;%
+  mutate(TFR_Pct_Chnge = (TFR/lag(TFR)-1)*100 ) %&gt;%
+  mutate(Births_Pct_Chnge = (BIRTHS/lag(BIRTHS)-1)*100) %&gt;%
+  filter(St_Code == `NHL State`) %&gt;%                          # data for states which won the Stanley Cup
+  arrange(YEAR) %&gt;%
+  select(1,11,2,4,28,26,5,29,27) %&gt;%
+  filter(Births_Pct_Chnge &gt; 0 | TFR_Pct_Chnge &gt;0)%&gt;%
+  mutate(Births_to_TFR = BIRTHS/TFR)       #This is just to satisfy requirement for computing one variable as function of two others. Value doesn&#39;t signify any important data</code></pre>
+<pre><code>## # A tibble: 8 x 10
+## # Groups:   NAME [6]
+##    YEAR `NHL State` NAME             TFR TFR_Pct_Chnge TFR_to_mean BIRTHS
+##   &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;         &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;
+## 1  2001 CO          Colorado        2.4          1.69        1.22   67007
+## 2  2003 NJ          New Jersey      2.05         1.99        1.05  116983
+## 3  2004 FL          Florida         2.02         0.498       1.05  218053
+## 4  2006 NC          North Carolina  2.13         3.40        1.08  127859
+## 5  2007 CA          California      2.2          0.457       1.11  566414
+## 6  2011 MA          Massachusetts   1.67         0           0.999  73166
+## 7  2012 CA          California      1.89        -0.526       0.951 503755
+## 8  2014 CA          California      1.84         0           0.926 502879
+## # … with 3 more variables: Births_Pct_Chnge &lt;dbl&gt;, Births_to_mean &lt;dbl&gt;,
+## #   Births_to_TFR &lt;dbl&gt;</code></pre>
+<p><em>Summary statistics (mean, sd) were computed for fertility rate and number of births and saved as a separate data frame before being added to the full project data set. At this point the data was grouped by state so that a column could be mutated onto the dataframe to denote the percentage change for fertility rate/births from the previous year. This not only allows one to see if the fertility rate/births for the championship winning state is higher than the average for that state but also allows to see if it was a relative increase from the previous year. This process was carried out separately for NFL, MLB, NBA, and NHL to make the individually filtered dataframes easier to digest. For states which won the superbowl, 6 of the 17 possible entries had a positive % increase in either fertility rate or total number of births from the previous year. For states which won the World Series (MLB), this trend held for 7 out of 17. For states which won the NBA championship, this trend held for 6 out of 17. For states which won the Stanley Cup (NHL), this trend held for 8 out of 17. The mean and sd are useful statistics for comparison in this case however they are not as informative as the year to year percentage change. In most cases however the mean for either TFR or Births was higher than the average from 2000-2017.</em></p>
+<p><strong>Visualizing</strong></p>
+<pre class="r"><code># HEATMAP
+
+numeric_data &lt;- Project1Data %&gt;% full_join(StateSummary) %&gt;% 
+    group_by(NAME) %&gt;% mutate(TFR_to_mean = TFR/mean(TFR)) %&gt;% 
+    mutate(Births_to_mean = BIRTHS/mean(BIRTHS)) %&gt;% mutate(TFR_Pct_Chnge = (TFR/lag(TFR) - 
+    1) * 100) %&gt;% mutate(Births_Pct_Chnge = (BIRTHS/lag(BIRTHS) - 
+    1) * 100) %&gt;% filter(St_Code == `NFL State` | St_Code == 
+    `MLB State` | St_Code == `NBA State` | St_Code == `NHL State`) %&gt;% 
+    arrange(YEAR) %&gt;% select(2, 3, 4, 26, 28, 5, 27, 29) %&gt;% 
+    ungroup %&gt;% select_if(is.numeric)
+
+# numeric data set contains the TFR and Birth data relative
+# to the mean as well as the previous year for the rows where
+# the state won a championship in one of the 4 major sports
+# leagues.
+
+correlation_mat &lt;- numeric_data %&gt;% cor(use = &quot;pair&quot;)
+
+correlation_mat %&gt;% as.data.frame %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% 
+    pivot_longer(-1, names_to = &quot;var2&quot;, values_to = &quot;correlation&quot;) %&gt;% 
+    ggplot(aes(var1, var2, fill = correlation)) + geom_tile() + 
+    scale_fill_gradient2(low = &quot;red&quot;, mid = &quot;white&quot;, high = &quot;blue&quot;) + 
+    geom_text(aes(label = round(correlation, 2)), color = &quot;black&quot;, 
+        size = 4) + theme(axis.text.x = element_text(angle = 90, 
+    hjust = 1)) + coord_fixed()</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><em>The correlation heatmap above contains 4 data points for each year, corresponding to the birth/TFR data for the state which won a sports championship. You can see that for most variables there is a weak but positive correlation. This makes sense according to the data analysis in the previous section of the report because most of the time a state won a sports championship the births or total fertility rate were higher than the average from 2000-2018 or there was an increase in the statistic from the previous year</em></p>
+<pre class="r"><code>Project1Data %&gt;% ggplot(aes(YEAR, BIRTHS)) + geom_point(aes(color = St_Code)) + 
+    ggtitle(&quot;Total Births per State from 2000-2018&quot;) + theme(plot.title = element_text(hjust = 0.5)) + 
+    xlab(&quot;Year&quot;) + ylab(&quot;Total Number of Births&quot;) + scale_x_continuous(breaks = seq(2000, 
+    2018, by = 1)) + theme(axis.text.x = element_text(angle = 45, 
+    vjust = 0.9, hjust = 1)) + scale_y_continuous(trans = &quot;log10&quot;) + 
+    scale_color_viridis_d() + theme(legend.text = element_text(size = 7)) + 
+    theme(legend.title = element_blank())</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" />
+<em>The total number of births by state over time is visualized above. Other than California, the total number of births do not vary much over the period of 2000-2018, with most state having a total variation of less than 10%. This helps drive home the point that there may be a correlation between a state winning a major sports championship and observing an elevated number of births the following year (either percent increase, or relative to the mean).</em></p>
+<pre class="r"><code>Project1Data %&gt;% ggplot(aes(St_Code, TFR, fill = St_Code)) + 
+    geom_bar(stat = &quot;summary&quot;) + geom_errorbar(aes(y = TFR), 
+    stat = &quot;summary&quot;, width = 0.5, color = &quot;blue&quot;) + theme(axis.text.x = element_text(angle = 90, 
+    vjust = 0.5, hjust = 1)) + xlab(&quot;State&quot;) + ylab(&quot;Total Fertility Rate&quot;) + 
+    theme(axis.text = element_text(size = 7)) + ggtitle(&quot;Average State Fertility Rates from 2000-2018&quot;) + 
+    theme(plot.title = element_text(hjust = 0.5)) + theme(legend.text = element_text(size = 7)) + 
+    theme(legend.key.width = unit(0.2, &quot;cm&quot;)) + theme(legend.title = element_blank())</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" />
+<em>The average fertility rate for each state over the time period of 2000-2018 is visualized above. These averages all have small errors associated with them indicating that total fertility rate is a useful value for analyzing changes in birth rates. Due to the stability of this statistic, a relative increase in this value may be partially correlated to the winning of a major sports championship in that state.</em></p>
+<p><strong>Dimensionality Reduction</strong></p>
+<pre class="r"><code>pam_clust_dat &lt;- Project1Data %&gt;% select(YEAR, TFR, BIRTHS)  #create dataset for cluster analysis
+
+project_pam &lt;- pam_clust_dat %&gt;% scale %&gt;% pam(k = 7)  #perform PAM clustering with k = 7
+
+project_pam</code></pre>
+<pre><code>## Medoids:
+##       ID       YEAR        TFR       BIRTHS
+## [1,] 745 -1.0948684 -0.1835261 -0.266996867
+## [2,] 862 -0.5474342  0.3791951  0.289650532
+## [3,] 792  0.5474342 -0.4648867 -0.003206095
+## [4,] 758  1.2773465 -0.9807145 -0.248932075
+## [5,] 519 -0.7299123  1.4108507 -0.463127365
+## [6,] 204  0.7299123  0.5198754 -0.658190835
+## [7,] 809  0.1824781  0.8950229  3.259201364
+## Clustering vector:
+##   [1] 1 1 1 1 1 1 2 2 2 3 3 3 3 3 3 4 4 4 4 5 5 5 5 5 5 5 5 5 5 5 6 6 6 6 6 6 6
+##  [38] 6 5 5 5 5 5 5 5 5 5 2 2 3 3 3 3 3 4 4 4 5 1 1 1 1 2 5 5 5 6 6 6 6 3 6 6 6
+##  [75] 4 4 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 5 5 5 2 2
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 850 entries ]
+## Objective function:
+##     build      swap 
+## 0.7875561 0.7657307 
+## 
+## Available components:
+##  [1] &quot;medoids&quot;    &quot;id.med&quot;     &quot;clustering&quot; &quot;objective&quot;  &quot;isolation&quot; 
+##  [6] &quot;clusinfo&quot;   &quot;silinfo&quot;    &quot;diss&quot;       &quot;call&quot;       &quot;data&quot;</code></pre>
+<pre class="r"><code>projectclust &lt;- pam_clust_dat %&gt;% mutate(cluster = as.factor(project_pam$clustering))  #create dataset with clusters for visualization
+
+projectclust$silinfo$avg.width</code></pre>
+<pre><code>## NULL</code></pre>
+<pre class="r"><code>sil_width &lt;- vector()
+
+for (i in 2:10) {
+    pam_fit &lt;- pam(pam_clust_dat, k = i)
+    sil_width[i] &lt;- pam_fit$silinfo$avg.width
+}
+ggplot() + geom_line(aes(x = 1:10, y = sil_width)) + scale_x_continuous(name = &quot;k&quot;, 
+    breaks = 1:10)  #confirm best value for k is 7 by graphing average silhouette width</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>projectclust %&gt;% plot_ly(x = ~YEAR, y = ~TFR, z = ~BIRTHS, color = ~cluster, 
+    type = &quot;scatter3d&quot;, mode = &quot;markers&quot;)</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"visdat":{"19ce65804f6fe":["function () ","plotlyVisDat"]},"cur_data":"19ce65804f6fe","attrs":{"19ce65804f6fe":{"x":{},"y":{},"z":{},"mode":"markers","color":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"YEAR"},"yaxis":{"title":"TFR"},"zaxis":{"title":"BIRTHS"}},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[2000,2001,2002,2003,2004,2005,2001,2002,2003,2004,2000,2001,2002,2003,2004,2005,2006,2007,2000,2001,2002,2003,2004,2005,2000,2001,2002,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004,2005,2006,2007,2000,2001,2002,2003,2004,2000,2001,2002,2003,2004,2005,2006,2000,2001,2002,2000,2001,2002,2003,2004,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004,2005,2006,2007,2002,2000,2001,2002,2003,2004,2005,2001,2002,2003,2000,2001,2002,2003,2004,2005,2006,2000,2001,2002,2003,2004,2000,2001,2002,2003,2004,2005,2006,2007,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004,2000,2001,2002,2003,2004,2005,2006,2007,2000,2001,2002,2003,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004,2005,2006,2007,2000,2001,2002,2003,2004,2005,2000,2001,2002,2003,2004],"y":[2.02,1.94,1.88,1.92,1.91,1.93,2.09,2.04,2.06,2.07,1.93,1.94,1.88,1.92,1.9,1.91,1.9,1.92,2.01,1.96,1.94,2.01,1.97,2.01,2.11,2.09,2.02,2.05,2.04,1.95,1.99,1.98,2.01,1.99,1.95,1.88,1.95,1.96,1.99,2.13,2.07,1.99,2,2,1.87,1.61,1.63,1.66,1.75,1.75,1.78,1.77,1.79,1.97,1.95,1.92,1.98,1.98,1.8,1.81,1.71,1.74,1.72,1.71,1.78,1.97,1.94,1.92,2.06,2.06,1.97,2.02,2.03,2.12,2.05,1.98,2.03,2.03,2.02,2.05,2.02,1.94,1.99,1.99,2,2,1.97,2.03,2,1.98,1.66,1.66,1.73,1.77,1.79,1.78,1.75,1.76,2.01,1.88,1.9,1.86,1.93,1.95,1.98,1.96,2.1,2.11,2.09,2.06,1.91,1.9,1.87,1.85,1.96,1.87,1.86,1.8,1.86,1.85,1.82,1.87,1.7,1.76,1.71,1.73,1.72,1.76,1.97,1.96,1.87,1.93,1.95,1.97,2.06,2.04,1.94,1.95,1.96,1.57,1.55,1.6,1.68,1.72,1.62,1.69,1.72,1.9,1.89,1.93,1.97,2.01,1.96,1.89,1.9,1.91,1.91,1.72,1.71,1.78,1.8,1.8,1.8,1.82,1.93,1.94,1.94,1.89,1.94,1.93,1.94,1.98,1.93,2.03,2.06,2.05],"z":[63299,60454,58967,59552,59510,60453,37010,37437,37784,38573,43026,42648,42001,42873,42095,41718,41820,41660,11051,10749,11090,11329,11369,11643,87699,86459,85081,38266,37619,37559,38174,38438,39311,56029,54658,54233,55236,55720,56444,67898,65352,64872,65040,65369,60937,13603,13759,13559,13855,13944,14112,14151,14120,74316,73218,73323,74930,74628,81614,81077,80645,80184,78484,76865,77676,136171,133427,129967,67604,67562,68025,70050,70624,44075,42282,41518,42380,42827,42395,76463,75464,75251,77045,77765,10957,10970,11049,11422,11519,11583,14609,14656,14442,14393,14565,14420,14378,14168,114751,7676,7629,7757,7972,8189,8390,151570,50387,50981,45804,45322,45192,45953,45678,45922,48689,146281,143495,142850,145959,144748,12505,12713,12894,13209,12779,12697,12372,12376,56114,55756,54570,55649,56590,57711,79611,78340,77482,78890,79642,6500,6366,6387,6589,6599,6295,6511,6513,98938,98884,99672,101254,81036,79570,79028,80489,81747,82703,20865,20428,20712,20935,20880,20836,20931,21994,69326,69072,68560,70040,70146,70984,6253,6115,6550,6700,6807],"mode":"markers","type":"scatter3d","name":"1","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"frame":null},{"x":[2006,2007,2008,2009,2010,2005,2003,2004,2005,2006,2007,2008,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2001,2002,2003,2004,2005,2006,2007,2008,2009,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2003,2004,2005,2006,2007,2008,2009,2008,2006,2007,2008,2009,2006,2008,2009,2005,2006,2007,2008,2003,2004,2005,2006,2007,2005,2006,2007,2008,2009,2005,2006,2007,2008,2000,2001,2003,2004,2005,2006,2007,2008,2009,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2002,2003,2004,2005,2006,2007,2008,2009,2000,2002,2003,2004,2005,2006,2007,2008,2009,2004,2005,2007,2008,2005,2006,2007,2008,2006,2007,2008,2009,2005,2006,2007,2008,2004,2005,2006,2007,2008,2006,2007,2008,2009,2006,2007,2008],"y":[2.03,2.07,2.06,2.12,2.07,2.09,2.12,2.09,2.08,2.11,2.1,2.05,2.16,2.17,2,2.01,2.02,2.06,2.09,2.12,2.05,1.93,2.23,2.11,2.12,2.15,2.14,2.23,2.25,2.17,2.05,2.19,2.19,2.04,2.05,2.04,2.03,2.03,2.04,2,1.94,2.05,2.06,2.06,2.08,2.12,2.09,2.03,2.11,2.05,2.09,2.06,2,2.11,2.08,2.02,2,2.01,2.06,2.03,1.94,1.93,1.91,1.93,1.91,2.02,2.14,2.15,2.11,2.04,1.99,2.07,2.08,2.05,2.09,2.12,2.05,2.04,2.05,2.05,2.1,2.06,2,2.02,2.01,1.83,1.87,1.86,1.86,1.89,1.92,1.89,1.87,2.02,2.02,2.03,2.06,2.13,2.15,2.12,2.02,2,1.94,1.96,1.96,1.96,1.99,2.01,1.99,1.94,2.11,2.11,1.98,1.95,1.86,1.93,1.96,1.94,2.14,2.14,2.13,1.99,2,2.07,2.11,2.07,2.03,2.03,2.05,2.07,2.02,1.98,2.03,2.04,1.97,2.01,2.01,2],"z":[63232,64804,64546,92798,87477,39208,69339,68503,68944,70751,70809,70031,204125,205793,205579,212250,218053,226240,236802,239165,231445,221394,133526,133300,135979,138849,142200,148633,151137,146603,141377,185036,184064,180622,182495,180778,179020,180572,180836,176795,171163,86434,87142,87193,88631,89864,88742,86673,40224,58250,59368,58375,57551,63376,65268,64973,74980,77494,78095,77289,131094,129776,127706,127483,125261,70919,73525,73735,72421,70646,78618,81385,81930,80963,115632,115795,116983,115253,113776,115020,116063,112710,110331,258737,254026,251415,253714,249947,246351,250104,253451,250383,248110,117335,118323,119847,123096,127859,131037,130839,126845,155472,148720,149679,148954,148388,150593,150879,148821,144841,51306,51801,49378,49096,145383,149090,150713,149273,62171,62875,63071,60620,81747,84355,86711,85560,103933,104555,107817,108884,106686,86876,88978,90321,89313,72340,72784,72261],"mode":"markers","type":"scatter3d","name":"2","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"frame":null},{"x":[2009,2010,2011,2012,2013,2014,2011,2012,2013,2014,2015,2013,2009,2010,2011,2012,2013,2008,2009,2010,2011,2011,2012,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2008,2009,2010,2009,2010,2011,2012,2013,2014,2007,2008,2009,2010,2011,2008,2009,2010,2011,2012,2013,2014,2010,2011,2012,2013,2014,2015,2016,2010,2011,2012,2013,2014,2009,2010,2011,2012,2013,2014,2010,2011,2012,2013,2014,2008,2009,2010,2010,2011,2012,2013,2014,2013,2014,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2009,2010,2011,2012,2009,2010,2011,2012,2013,2014,2008,2009,2010,2011,2012,2013,2009,2010,2011,2012,2013,2014,2008,2009,2009,2010,2011,2012,2013,2014,2010,2011,2012,2013,2014,2008,2009,2010,2011,2012,2013,2009,2010,2011,2012,2013,2014],"y":[1.96,1.87,1.84,1.81,1.79,1.83,2,2,1.97,1.97,1.92,1.94,1.98,1.92,1.85,1.83,1.79,1.88,1.8,1.72,1.71,1.9,1.85,1.83,1.8,1.77,1.77,1.77,1.77,1.96,1.93,1.88,1.86,1.87,1.85,1.88,1.84,1.82,1.79,1.81,1.81,1.97,1.95,1.93,1.92,1.93,1.93,1.97,1.94,1.95,1.95,1.96,1.95,1.95,1.91,1.92,1.93,1.96,1.96,1.74,1.73,1.7,1.96,1.89,1.85,1.83,1.79,1.82,1.8,1.77,1.71,1.67,1.67,1.87,1.85,1.85,1.84,1.82,1.83,1.83,1.96,1.95,1.94,1.94,1.94,1.93,1.93,1.96,1.94,1.89,1.88,1.89,1.97,1.94,1.92,1.89,1.88,1.87,1.96,1.91,1.87,1.86,1.87,1.71,1.67,1.67,1.9,1.88,1.85,1.81,1.81,1.93,1.91,1.81,1.79,1.77,1.73,1.73,1.71,1.91,1.86,1.84,1.82,1.83,1.82,1.9,1.88,1.89,1.88,1.88,1.87,1.85,1.79,1.76,1.74,1.86,1.81,1.8,1.78,1.75,1.76,1.73,1.67,1.88,1.84,1.82,1.8,1.95,1.88,1.87,1.87,1.85,1.87,1.67,1.62,1.95,1.88,1.85,1.84,1.81,1.81,1.91,1.89,1.88,1.84,1.85,1.9,1.86,1.83,1.84,1.85,1.86,1.95,1.89,1.87,1.86,1.84,1.85],"z":[62475,60050,59354,58448,58167,59422,85543,86441,85600,86887,85351,37832,68628,66355,65055,65187,65007,40399,38896,37708,37281,11257,11023,214590,213414,213148,215407,219991,224269,133947,132409,130280,128748,130946,131404,165200,161312,159160,156931,158556,158116,83940,83701,83227,83102,84080,84040,55784,55370,55758,55686,56170,55971,62379,61888,62642,63201,64497,64692,13609,13470,12970,75059,73801,73093,72883,71953,73921,77967,77022,75016,72865,73166,121127,117294,114531,114008,113091,113489,114375,68610,68409,68772,69159,69904,69834,69749,40036,39860,38669,38634,38736,78905,76759,76117,75446,75296,75360,35934,35296,34911,35030,35861,13683,13377,12874,106922,105883,104230,102575,103305,26354,26052,244375,241312,240916,236980,238773,237274,122350,120389,119831,119002,120975,120843,139128,137918,138483,138936,139467,139264,47132,45540,45155,45067,146434,143321,143178,142514,140921,142268,12048,11442,58342,57393,57155,56795,82211,79495,79588,80371,79992,81602,6339,6110,105059,103002,102652,103013,102147,103300,86539,86976,87463,86577,88585,21501,21268,20470,20717,20827,20825,70843,68487,67810,67295,66649,67161],"mode":"markers","type":"scatter3d","name":"3","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"frame":null},{"x":[2015,2016,2017,2018,2016,2017,2018,2017,2018,2014,2015,2016,2017,2018,2012,2013,2014,2015,2016,2017,2018,2013,2014,2015,2016,2017,2018,2016,2017,2018,2016,2017,2018,2017,2018,2018,2016,2017,2018,2016,2017,2018,2017,2018,2017,2018,2016,2017,2018,2016,2017,2018,2011,2012,2013,2014,2015,2016,2017,2018,2015,2016,2017,2018,2012,2013,2014,2015,2016,2017,2018,2015,2016,2017,2018,2017,2018,2015,2016,2017,2018,2015,2016,2017,2018,2016,2017,2018,2015,2016,2017,2018,2011,2012,2013,2014,2015,2016,2017,2018,2015,2016,2017,2018,2015,2016,2017,2018,2016,2017,2018,2016,2017,2018,2016,2017,2018,2017,2018,2013,2014,2015,2016,2017,2018,2015,2016,2017,2018,2010,2011,2012,2013,2014,2015,2016,2017,2018,2014,2015,2016,2017,2018,2015,2016,2017,2018,2010,2011,2012,2013,2014,2015,2016,2017,2018,2015,2016,2017,2018,2015,2016,2017,2018,2014,2015,2016,2017,2018,2015,2016,2017,2018,2017,2018],"y":[1.83,1.83,1.82,1.79,1.87,1.79,1.72,1.91,1.88,1.77,1.75,1.72,1.63,1.56,1.66,1.63,1.63,1.61,1.63,1.59,1.57,1.79,1.79,1.81,1.79,1.75,1.72,1.75,1.71,1.67,1.82,1.79,1.73,1.89,1.85,1.9,1.78,1.73,1.69,1.9,1.87,1.85,1.94,1.9,1.93,1.92,1.93,1.9,1.87,1.93,1.88,1.86,1.67,1.68,1.67,1.66,1.64,1.64,1.58,1.58,1.8,1.79,1.75,1.75,1.63,1.6,1.58,1.55,1.54,1.51,1.45,1.81,1.8,1.76,1.73,1.87,1.83,1.88,1.87,1.85,1.84,1.86,1.86,1.81,1.82,1.89,1.8,1.73,1.86,1.83,1.77,1.75,1.67,1.61,1.6,1.58,1.59,1.55,1.52,1.47,1.8,1.79,1.76,1.78,1.9,1.83,1.76,1.7,1.69,1.65,1.67,1.8,1.77,1.73,1.85,1.83,1.79,1.9,1.88,1.73,1.72,1.7,1.66,1.56,1.49,1.74,1.72,1.69,1.67,1.63,1.6,1.59,1.57,1.56,1.58,1.55,1.51,1.49,1.8,1.8,1.76,1.73,1.71,1.85,1.82,1.8,1.78,1.66,1.63,1.61,1.59,1.63,1.58,1.54,1.52,1.44,1.8,1.79,1.75,1.73,1.82,1.81,1.71,1.64,1.81,1.78,1.74,1.73,1.71,1.85,1.84,1.79,1.76,1.86,1.79],"z":[59657,59151,58941,57761,84520,81872,80723,37520,37018,65830,66581,66613,64382,62885,36539,36085,36285,35746,36015,35221,34725,10831,10972,11166,10992,10855,10621,225022,223630,221542,130042,129243,126172,17517,16972,21403,154445,149390,144815,83091,82170,81646,38430,37785,36519,36261,55449,54752,53922,63178,61018,59615,12704,12798,12776,12698,12607,12705,12298,12311,73616,73136,71641,71080,72439,71788,71908,71492,71317,70702,69109,113312,113315,111426,110032,68595,67344,38394,37928,37357,37000,75061,74705,73034,73269,12282,11799,11513,36298,36260,35756,35682,12851,12352,12396,12302,12433,12267,12116,11995,103127,102647,101250,101223,25816,24692,23767,23039,234283,229737,226238,120779,120125,118954,138085,136832,135134,50214,49800,45155,45556,45655,45535,43631,42188,141047,139409,137745,135673,11177,10960,10926,10809,10823,10993,10798,10638,10506,57627,58139,57342,57029,56669,81685,80807,81016,80751,6223,6078,6009,5975,6130,5903,5756,5655,5432,103303,102460,100391,99843,88990,90505,87562,86085,20301,19805,19079,18675,18248,67041,66615,64975,64098,6903,6562],"mode":"markers","type":"scatter3d","name":"4","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"frame":null},{"x":[2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2000,2001,2002,2003,2004,2005,2006,2007,2008,2000,2006,2007,2008,2000,2001,2002,2006,2007,2000,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2006,2007,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2007,2006,2007,2008,2006,2007,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2000,2001,2002,2003,2004,2005,2006,2007,2008,2000,2001,2002,2003,2004,2005,2006,2007,2008,2000,2001,2006,2007,2008,2000,2001,2006,2007,2008,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2005,2006,2007,2008],"y":[2.44,2.46,2.55,2.37,2.42,2.44,2.32,2.32,2.41,2.28,2.35,2.65,2.64,2.36,2.39,2.38,2.37,2.44,2.43,2.31,2.14,2.18,2.2,2.16,2.36,2.4,2.15,2.09,2.13,2.24,2.34,2.31,2.14,2.24,2.3,2.28,2.23,2.29,2.34,2.23,2.31,2.3,2.27,2.32,2.34,2.32,2.42,2.49,2.47,2.27,2.14,2.15,2.21,2.17,2.15,2.15,2.14,2.14,2.23,2.27,2.25,2.19,2.16,2.26,2.28,2.2,2.13,2.08,2.21,2.23,2.17,2.21,2.23,2.19,2.29,2.3,2.29,2.27,2.56,2.54,2.25,2.21,2.22,2.27,2.36,2.42,2.31,2.31,2.31,2.21,2.2,2.2,2.21,2.23,2.27,2.23,2.27,2.24,2.15,2.12,2.13,2.18,2.2,2.2,2.22,2.21,2.15,2.17,2.19,2.24,2.26,2.26,2.4,2.41,2.35,2.29,2.27,2.76,2.76,2.54,2.57,2.54,2.47,2.63,2.63,2.6,2.47,2.45,2.38,2.37,2.16,2.24,2.28,2.28],"z":[9974,10003,9938,10086,10338,10459,10996,11052,11442,11324,11471,85273,85597,87837,90967,93663,96199,102429,102981,99442,37783,40961,41378,40669,65438,67007,68418,11989,12170,132644,17551,17072,17477,18100,18281,17924,18982,19134,19484,18887,20366,20688,20970,21800,22532,23062,24184,25019,25149,23737,40607,40886,39666,38869,39412,39476,39669,39888,40968,42004,41833,41396,66301,46056,46491,44947,12508,12439,24646,24820,25383,25917,26332,26145,26727,26934,26989,26936,30829,31382,32571,33647,35200,37268,40027,41181,39506,27223,27128,27753,27821,28384,28835,29936,30616,30173,120311,118185,8621,8840,8938,49782,50118,54016,55065,54781,10345,10483,10698,11027,11338,11462,11919,12261,12071,11934,11811,47353,47959,49182,49860,50670,51556,53504,55130,55634,53887,52258,51223,51465,7239,7672,7893,8038],"mode":"markers","type":"scatter3d","name":"5","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"frame":null},{"x":[2011,2012,2013,2014,2015,2016,2017,2018,2009,2010,2011,2012,2014,2015,2016,2008,2009,2010,2010,2011,2012,2013,2014,2015,2016,2010,2011,2012,2013,2014,2015,2016,2017,2009,2010,2011,2012,2013,2014,2015,2016,2010,2011,2012,2013,2014,2015,2016,2009,2008,2009,2010,2011,2012,2013,2014,2015,2010,2011,2012,2013,2014,2015,2016,2017,2018,2009,2009,2010,2011,2012,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2009,2010,2011,2012,2013,2014,2015,2016,2011,2012,2013,2014,2015,2016,2017,2018,2013,2014,2015,2016,2017,2018,2009,2010,2011,2012,2013,2014,2015,2016],"y":[2.28,2.19,2.22,2.19,2.17,2.14,2.02,1.97,2.08,2,2,1.97,1.97,1.99,1.95,2.11,2,1.94,2.15,2.11,2.1,2.08,2,1.97,1.94,2.24,2.15,2.19,2.13,2.15,2.13,2.08,2.01,2.07,2.01,1.97,1.99,2,2.02,2.01,1.99,2.16,2.09,2.12,2.04,2.05,2.05,2,2.07,2.08,1.98,1.99,1.96,1.96,1.97,1.95,1.96,2.14,2.11,2.12,2.12,2.16,2.15,2.14,2.06,2.03,2.13,2.14,2.06,2,1.98,2.12,2.04,2.08,2.12,2.14,2.24,2.16,2.17,2.07,2.03,2.16,2.11,2.04,2.04,2.04,2.03,2,1.98,2.25,2.27,2.27,2.27,2.27,2.26,2.23,2.15,2.34,2.33,2.29,2.24,2.12,2.03,2.14,2.04,1.98,1.99,1.99,1.99,2.01,1.93],"z":[11456,11187,11446,11392,11282,11209,10445,10086,39808,38540,38715,38347,38511,38886,38274,12090,11559,11364,18988,18956,18980,18987,18550,18420,18059,23198,22305,22963,22383,22876,22827,22482,22181,39701,38719,38214,38702,39094,39687,39482,39403,40649,39642,40341,38839,39223,39154,38053,42901,12594,12257,12060,12069,12118,12377,12432,12583,25918,25720,25942,26095,26794,26679,26589,25821,25488,37612,29000,27850,27289,27068,9001,9104,9527,10106,10599,11359,11314,11383,10737,10636,54553,53238,52272,52751,53369,53339,53122,52592,11846,12104,12248,12283,12336,12275,12134,11893,50957,51154,50778,50464,48585,47209,7881,7556,7399,7572,7644,7696,7765,7386],"mode":"markers","type":"scatter3d","name":"6","marker":{"color":"rgba(255,217,47,1)","line":{"color":"rgba(255,217,47,1)"}},"textfont":{"color":"rgba(255,217,47,1)"},"error_y":{"color":"rgba(255,217,47,1)"},"error_x":{"color":"rgba(255,217,47,1)"},"line":{"color":"rgba(255,217,47,1)"},"frame":null},{"x":[2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018],"y":[2.19,2.15,2.07,2.13,2.15,2.18,2.19,2.2,2.15,2.06,1.95,1.9,1.89,1.84,1.84,1.79,1.77,1.69,1.63,2.5,2.49,2.35,2.35,2.34,2.34,2.36,2.4,2.36,2.3,2.16,2.07,2.08,2.07,2.09,2.08,2.02,1.92,1.87],"z":[531959,527759,529357,540997,544843,548882,562440,566414,551779,527020,510198,502120,503755,494705,502879,491748,488827,471658,454920,363414,365410,372450,377476,381293,385915,399603,407625,405554,401977,386118,377445,382727,387340,399766,403618,398047,382050,378624],"mode":"markers","type":"scatter3d","name":"7","marker":{"color":"rgba(229,196,148,1)","line":{"color":"rgba(229,196,148,1)"}},"textfont":{"color":"rgba(229,196,148,1)"},"error_y":{"color":"rgba(229,196,148,1)"},"error_x":{"color":"rgba(229,196,148,1)"},"line":{"color":"rgba(229,196,148,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p><em>This data makes some sense when considering the datatables from the wrangling step. For example, there were approximately 6 or 7 data points which showed either a positive increase in TFR/BIRTHS or a value higher than the mean for states which won a major sports championship. This corresponds to the average silhouette width indicating that 7 groups is a good marker for PAM clustering. Additionally, those 6 or 7 data points showed groupings in the early 2000’s (2000-2006) and then an additional groupings the mid 2010’s (2013-2016). These time periods correspond to the color groupings on the visualization above indicating that the PAM clustering was useful in reinforcing the idea that states which won a major sports championship were more likely to observe and increased Birth/TFR rate. Some of the groupings are a little off however due to the realtive difference in total Births for some of the larger states like California and Texas.</em></p>
+<p><em>In conclusion, it appears that there is a weak positive correlation with the Birth rate/TFR of state and winning a championship in one of the 4 major sports leagues (NFL, NBA, MLB, NHL). This was supported by calculation of summary statistics, correlation visualization, and PAM clustering. This analysis could be improved by scaling TFR/Birth values to account for differences in state populations as the larger states (Texas, California) had Birth/TFR values higher than most. Overall, I would say this data analysis project was informative and revealed some trends that might not be so obvious to the naked eye.</em></p>
+<pre><code>## R version 3.6.1 (2019-07-05)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 18.04.5 LTS
+## 
+## Matrix products: default
+## BLAS:   /stor/system/opt/R/R-3.6.1/lib/R/lib/libRblas.so
+## LAPACK: /stor/system/opt/R/R-3.6.1/lib/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] plotly_4.9.2.2  cluster_2.1.0   readxl_1.3.1    forcats_0.5.1  
+##  [5] stringr_1.4.0   dplyr_1.0.6     purrr_0.3.4     readr_1.4.0    
+##  [9] tidyr_1.1.3     tibble_3.1.1    ggplot2_3.3.3   tidyverse_1.3.1
+## 
+## loaded via a namespace (and not attached):
+##  [1] Rcpp_1.0.5         lubridate_1.7.10   assertthat_0.2.1   digest_0.6.27     
+##  [5] utf8_1.1.4         R6_2.5.0           cellranger_1.1.0   backports_1.2.1   
+##  [9] reprex_2.0.0       evaluate_0.14      httr_1.4.2         blogdown_0.20     
+## [13] pillar_1.6.0       rlang_0.4.10       lazyeval_0.2.2     rstudioapi_0.13   
+## [17] data.table_1.13.6  rmarkdown_2.6      labeling_0.4.2     htmlwidgets_1.5.3 
+## [21] munsell_0.5.0      broom_0.7.6        compiler_3.6.1     modelr_0.1.8      
+## [25] xfun_0.22          pkgconfig_2.0.3    htmltools_0.5.0    tidyselect_1.1.0  
+## [29] bookdown_0.21      fansi_0.4.1        viridisLite_0.3.0  crayon_1.4.1      
+## [33] dbplyr_2.1.1       withr_2.3.0        grid_3.6.1         jsonlite_1.7.2    
+## [37] gtable_0.3.0       lifecycle_1.0.0    DBI_1.1.0          magrittr_2.0.1    
+## [41] formatR_1.7        scales_1.1.1       cli_2.5.0          stringi_1.5.3     
+## [45] farver_2.0.3       fs_1.5.0           xml2_1.3.2         ellipsis_0.3.1    
+## [49] generics_0.1.0     vctrs_0.3.6        RColorBrewer_1.1-2 tools_3.6.1       
+## [53] glue_1.4.2         hms_1.0.0          crosstalk_1.1.0.1  yaml_2.2.1        
+## [57] colorspace_2.0-0   rvest_1.0.0        knitr_1.30         haven_2.3.1</code></pre>
+<pre><code>## [1] &quot;2021-05-07 11:52:34 CDT&quot;</code></pre>
+<pre><code>##                                        sysname 
+##                                        &quot;Linux&quot; 
+##                                        release 
+##                           &quot;4.15.0-142-generic&quot; 
+##                                        version 
+## &quot;#146-Ubuntu SMP Tue Apr 13 01:11:19 UTC 2021&quot; 
+##                                       nodename 
+##                   &quot;educcomp02.ccbb.utexas.edu&quot; 
+##                                        machine 
+##                                       &quot;x86_64&quot; 
+##                                          login 
+##                                      &quot;unknown&quot; 
+##                                           user 
+##                                       &quot;kjj865&quot; 
+##                                 effective_user 
+##                                       &quot;kjj865&quot;</code></pre>
 </div>
 
             

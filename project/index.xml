@@ -1,21 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Projects on Chris Turner</title>
+    <title>Projects on Kyle Juetten</title>
     <link>/project/</link>
-    <description>Recent content in Projects on Chris Turner</description>
+    <description>Recent content in Projects on Kyle Juetten</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-US</language>
-    <lastBuildDate>Tue, 01 Dec 2020 00:00:00 +0000</lastBuildDate><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Project 1</title>
-      <link>/project/project1/</link>
-      <pubDate>Tue, 01 Dec 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/project/project1/</guid>
-      <description> Test Project 1  </description>
-    </item>
-    
+    <language>en-US</language><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Examining survival of Titanic passengers</title>
       <link>/project/project2/</link>
@@ -24,6 +14,16 @@
       <guid>/project/project2/</guid>
       <description>Kyle Juetten, kjj865 Introduction
 In this data analysis project I am interested in examining if there are any trends as to who survived the incident with the Titanic. The 5 variables in this data set are the name of the passenger, whether they survived or not (binary), the sex of the passenger, the age (numeric), and what class they were in (numeric). There are 1309 observations in total. I anticipate some sort of trend for those who survived pertaining to either the age of the passengers, the passenger class, or both.</description>
+    </item>
+    
+    <item>
+      <title>Impacts of Winning a Championship on Birth Rates</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>Kyle Juetten, kjj865 Introduction
+In this data analysis project I am interested in examining the impact of winning a championship in one of U.S.A’s four major sports leagues (NBA, NHL, NFL, MLB) on the birth rate/total fertility rate of the winning state. The idea for this project came from a commercial I saw during the world cup many years ago about “world cup babies” and how the birth rates in the countries who win the world cup increase the following year.</description>
     </item>
     
   </channel>
