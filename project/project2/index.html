@@ -58,7 +58,7 @@
  
 <div class="blog-title">
           <h4>
-         January 1, 0001 
+         May 7, 2021 
             &nbsp;&nbsp;
             
           </h4>
@@ -176,7 +176,7 @@ random_dist_age[i]&lt;-mean(new2[new2$survived==&quot;yes&quot;,]$age)-
 {hist(random_dist_age,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = c(-1.627141      , 1.627141),col=&quot;red&quot;)}</code></pre>
 <p><img src="../../project/project2_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>mean(random_dist_age&gt;1.627141| random_dist_age&lt; -1.627141   )</code></pre>
-<pre><code>## [1] 0.068</code></pre>
+<pre><code>## [1] 0.0784</code></pre>
 <p><em>Based off the results of the two tailed p-test, the probability of the Class difference between those who survived and those who did not randomly being as large as it is is 0. This means it is extremely unlikely for this to happen by chance and is in agreement with the t-test. The same analysis was performed looking at the differences in age between those who survived and those who did not. The resulting two tailed p-test gave a probability of 0.06 which is not significant and in agreement with the t-test performed earlier. </em></p>
 <p><strong>Linear Regression</strong></p>
 <pre class="r"><code>library(sandwich)
@@ -250,7 +250,7 @@ Titanic_distn &lt;- replicate(5000, {
 
 Titanic_distn %&gt;% t %&gt;% as.data.frame %&gt;% summarize_all(sd)</code></pre>
 <pre><code>##   (Intercept)    Class_c       age_c Class_c:age_c
-## 1  0.01451482 0.01772481 0.001026086   0.001241065</code></pre>
+## 1  0.01472309 0.01741903 0.001017597   0.001212631</code></pre>
 <p><em>The coefficients from the bootstrapped standard errors were very different than those computed with the standard and robust SE’s. All of the new coefficients had positive values. From this information it is likely that the linear model does not do a good job at accounting for variation in the data and predicting survival from age or passenger class.</em></p>
 <p><strong>Logistic Regression 1</strong></p>
 <pre class="r"><code>fit &lt;- glm(survived~Class+age, data=TitanicData, family=&quot;binomial&quot;)
@@ -493,7 +493,7 @@ DBI_1.1.0 R6_2.5.0
 ## [56] lubridate_1.7.10 utf8_1.1.4 shape_1.4.5
 stringi_1.5.3 Rcpp_1.0.5
 ## [61] vctrs_0.3.6 dbplyr_2.1.1 tidyselect_1.1.0 xfun_0.22</code></pre>
-<pre><code>## [1] &quot;2021-05-07 10:45:23 CDT&quot;</code></pre>
+<pre><code>## [1] &quot;2021-05-07 13:48:20 CDT&quot;</code></pre>
 <pre><code>## sysname release
 ## &quot;Linux&quot; &quot;4.15.0-142-generic&quot;
 ## version nodename

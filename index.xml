@@ -5,11 +5,12 @@
     <link>/</link>
     <description>Recent content on Kyle Juetten</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-US</language><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <language>en-US</language>
+    <lastBuildDate>Fri, 07 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Examining survival of Titanic passengers</title>
       <link>/project/project2/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 07 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/project/project2/</guid>
       <description>Kyle Juetten, kjj865 Introduction
@@ -19,7 +20,7 @@ In this data analysis project I am interested in examining if there are any tren
     <item>
       <title>Impacts of Winning a Championship on Birth Rates</title>
       <link>/project/project1/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 07 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/project/project1/</guid>
       <description>Kyle Juetten, kjj865 Introduction
@@ -28,10 +29,10 @@ In this data analysis project I am interested in examining the impact of winning
     
     <item>
       <title>Overview of website content</title>
-      <link>/post/1/01/01/overview-of-website-content/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <link>/post/2021/05/07/overview-of-website-content/</link>
+      <pubDate>Fri, 07 May 2021 00:00:00 +0000</pubDate>
       
-      <guid>/post/1/01/01/overview-of-website-content/</guid>
+      <guid>/post/2021/05/07/overview-of-website-content/</guid>
       <description>Here is my post. I finally got it to work. Woo Hoo
 #Check it out 2+2 ## [1] 4 This website contains my data analysis projects from the computational biology and bioinformatics course taught at UT Austin.
 The course aims to showcase the power of R for statistics and data sciences.

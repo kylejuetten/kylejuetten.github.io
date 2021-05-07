@@ -1,7 +1,7 @@
 ---
 title: "Impacts of Winning a Championship on Birth Rates"
 author: "Kyle Juetten"
-date: "`r format(Sys.Date(), '%B %d, %Y')`"
+date: "2021-05-07"
 output:
   html_document:
     toc: true

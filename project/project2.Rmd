@@ -1,7 +1,7 @@
 ---
 title: "Examining survival of Titanic passengers"
 author: "Kyle Juetten"
-date: "`r format(Sys.Date(), '%B %d, %Y')`"
+date: "2021-05-07"
 output:
   html_document:
     toc: true
