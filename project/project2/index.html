@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Kyle Juetten" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Examining survival of Titanic passengers</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project2/">Examining survival of Titanic passengers</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="kyle-juetten-kjj865" class="section level3">
+<h3>Kyle Juetten, kjj865</h3>
+<p><strong>Introduction</strong></p>
+<p><em>In this data analysis project I am interested in examining if there are any trends as to who survived the incident with the Titanic. The 5 variables in this data set are the name of the passenger, whether they survived or not (binary), the sex of the passenger, the age (numeric), and what class they were in (numeric). There are 1309 observations in total. I anticipate some sort of trend for those who survived pertaining to either the age of the passengers, the passenger class, or both. I do not anticipate the sex of the passenger having an impact on this trend. </em></p>
+<pre class="r"><code>TitanicData &lt;- carData::TitanicSurvival
+
+head(TitanicData)</code></pre>
+<pre><code>## survived sex age passengerClass
+## Allen, Miss. Elisabeth Walton yes female 29.0000 1st
+## Allison, Master. Hudson Trevor yes male 0.9167 1st
+## Allison, Miss. Helen Loraine no female 2.0000 1st
+## Allison, Mr. Hudson Joshua Crei no male 30.0000 1st
+## Allison, Mrs. Hudson J C (Bessi no female 25.0000 1st
+## Anderson, Mr. Harry yes male 48.0000 1st</code></pre>
+<pre class="r"><code>TitanicData &lt;- TitanicData %&gt;% mutate(Class = as.numeric(TitanicData$passengerClass)) %&gt;% select(-4) %&gt;% na.omit()
+
+TitanicData &lt;- TitanicData%&gt;%mutate(y=ifelse(survived == &#39;yes&#39;,1,0))</code></pre>
+<p><strong>MANOVA</strong></p>
+<pre class="r"><code>man1 &lt;- manova(cbind(age,Class)~survived, data = TitanicData)
+
+summary(man1)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## survived 1 0.14436 87.983 2 1043 &lt; 2.2e-16 ***
+## Residuals 1044
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(man1)</code></pre>
+<pre><code>## Response age :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## survived 1 669 669.02 3.2272 0.07271 .
+## Residuals 1044 216429 207.31
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response Class :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## survived 1 76.00 76.005 119.51 &lt; 2.2e-16 ***
+## Residuals 1044 663.98 0.636
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>TitanicData%&gt;%group_by(survived)%&gt;%summarize(mean(age),mean(Class))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   survived `mean(age)` `mean(Class)`
+##   &lt;fct&gt;          &lt;dbl&gt;         &lt;dbl&gt;
+## 1 no              30.5          2.43
+## 2 yes             28.9          1.88</code></pre>
+<pre class="r"><code>pairwise.t.test(TitanicData$age,TitanicData$survived, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  TitanicData$age and TitanicData$survived 
+## 
+##     no   
+## yes 0.073
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(TitanicData$Class,TitanicData$survived, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  TitanicData$Class and TitanicData$survived 
+## 
+##     no    
+## yes &lt;2e-16
+## 
+## P value adjustment method: none</code></pre>
+<p><em>From the results of the MANOVA it appeared that at least one of the numeric variables (age or Class) had a significant correlation with survival (p &lt; 0.05). Univariate ANOVA anlaysis showed that there was a significant mean difference for the class of those who survived and those who did not. This significance did not carry over to the age of the passengers. It is highly likely the a type 1 error was made in this analysis as the MANOVA assumes linear relationships among variables as well as homegeneity of within-group covariances which is not met in this dataset. An adjusted bonferroni alpha of 0.05/2 = 0.025 should be used to maintain an alpha level of 0.05. 1 MANOVA, 1 ANOVA, and 2 t-tests were performed bringing the total to 4 tests of significance.</em></p>
+<p><strong>Randomization</strong></p>
+<pre class="r"><code>TitanicData %&gt;% group_by(survived) %&gt;% summarize(means = mean(Class)) %&gt;% summarize(mean_diff = diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   mean_diff
+##       &lt;dbl&gt;
+## 1    -0.548</code></pre>
+<pre class="r"><code>random_dist_Class&lt;-vector() 
+
+for(i in 1:5000){
+new&lt;-data.frame(Class=sample(TitanicData$Class),
+                survived=sample(TitanicData$survived)) 
+                                 
+random_dist_Class[i]&lt;-mean(new[new$survived==&quot;yes&quot;,]$Class)-   
+              mean(new[new$survived ==&quot;no&quot;,]$Class)}
+
+{hist(random_dist_Class,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = c(-0.5484369   , 0.5484369),col=&quot;red&quot;)}</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mean(random_dist_Class&gt;0.5484369| random_dist_Class&lt; -0.5484369)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>TitanicData %&gt;% group_by(survived) %&gt;% summarize(means = mean(age)) %&gt;% summarize(mean_diff = diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   mean_diff
+##       &lt;dbl&gt;
+## 1     -1.63</code></pre>
+<pre class="r"><code>random_dist_age&lt;-vector() 
+
+for(i in 1:5000){
+new2&lt;-data.frame(age=sample(TitanicData$age),
+                survived=sample(TitanicData$survived)) 
+                                 
+random_dist_age[i]&lt;-mean(new2[new2$survived==&quot;yes&quot;,]$age)-   
+              mean(new2[new2$survived ==&quot;no&quot;,]$age)}
+
+{hist(random_dist_age,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = c(-1.627141      , 1.627141),col=&quot;red&quot;)}</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mean(random_dist_age&gt;1.627141| random_dist_age&lt; -1.627141   )</code></pre>
+<pre><code>## [1] 0.068</code></pre>
+<p><em>Based off the results of the two tailed p-test, the probability of the Class difference between those who survived and those who did not randomly being as large as it is is 0. This means it is extremely unlikely for this to happen by chance and is in agreement with the t-test. The same analysis was performed looking at the differences in age between those who survived and those who did not. The resulting two tailed p-test gave a probability of 0.06 which is not significant and in agreement with the t-test performed earlier. </em></p>
+<p><strong>Linear Regression</strong></p>
+<pre class="r"><code>library(sandwich)
+library(lmtest)
+
+TitanicData$age_c &lt;- TitanicData$age - mean(TitanicData$age, na.rm=T)
+
+TitanicData$Class_c &lt;- TitanicData$Class - mean(TitanicData$Class, na.rm=T)
+
+LinearModel &lt;- lm(y~Class_c*age_c, data = TitanicData)
+
+summary(LinearModel)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = y ~ Class_c * age_c, data = TitanicData)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -0.9224 -0.3519 -0.2012 0.4430 1.0244
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 0.4097258 0.0153092 26.763 &lt; 2e-16 ***
+## Class_c -0.2411668 0.0184860 -13.046 &lt; 2e-16 ***
+## age_c -0.0075769 0.0010888 -6.959 6.05e-12 ***
+## Class_c:age_c 0.0003041 0.0012135 0.251 0.802
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 0.4555 on 1042 degrees of
+freedom
+## Multiple R-squared: 0.1444, Adjusted R-squared: 0.1419
+## F-statistic: 58.62 on 3 and 1042 DF, p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>TitanicData %&gt;% select(age_c, Class_c, survived) %&gt;% ggplot(aes(age_c, Class_c, color=survived)) + 
+geom_point()+geom_smooth(method=&quot;lm&quot;) </code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bptest(LinearModel)</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  LinearModel
+## BP = 23.95, df = 3, p-value = 2.559e-05</code></pre>
+<pre class="r"><code>summary(LinearModel)$coef[, 1:2]</code></pre>
+<pre><code>##                    Estimate  Std. Error
+## (Intercept)    0.4097257829 0.015309207
+## Class_c       -0.2411668401 0.018485957
+## age_c         -0.0075769103 0.001088783
+## Class_c:age_c  0.0003041337 0.001213512</code></pre>
+<pre class="r"><code>coeftest(LinearModel,vcov=vcovHC(LinearModel))</code></pre>
+<pre><code>##
+## t test of coefficients:
+##
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 0.40972578 0.01475668 27.7654 &lt; 2.2e-16 ***
+## Class_c -0.24116684 0.01764413 -13.6684 &lt; 2.2e-16 ***
+## age_c -0.00757691 0.00102599 -7.3850 3.117e-13 ***
+## Class_c:age_c 0.00030413 0.00121931 0.2494 0.8031
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p><em>The coefficients from the linear model state that for every 1 unit increase in y (survival) the Class_C decreases by 0.24. This essentially means those in the higher classes were more likely to survive. This same correlation with survival rate increasing as age decreases is also shown, although less prevalent. The slope of Class_c on survival is 0.0003 times greater than for age_c. The Breush-Pagan test revealed a p-value of 2.559 e-05 indicating that homoskedacity is not met and we reject the null hypothesis. The R^2 value indicates that our model accounts for 14% of the variation in the data. Regression results were recomputed using standard errors. The p-values changed very little across the board. No changes in significance were made from this recalculation.</em></p>
+<p><strong>Bootstrapped Standard Errors</strong></p>
+<pre class="r"><code>Titanic_bootstrap &lt;-sample_frac(TitanicData, replace=T)
+
+Titanic_distn &lt;- replicate(5000, {
+  Titanic_bootstrap &lt;- sample_frac(TitanicData, replace=T)
+  Titanic_fit &lt;- lm(y~Class_c*age_c, data = Titanic_bootstrap)
+  coef(Titanic_fit)
+})
+
+Titanic_distn %&gt;% t %&gt;% as.data.frame %&gt;% summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept)    Class_c       age_c Class_c:age_c
+## 1  0.01451482 0.01772481 0.001026086   0.001241065</code></pre>
+<p><em>The coefficients from the bootstrapped standard errors were very different than those computed with the standard and robust SE’s. All of the new coefficients had positive values. From this information it is likely that the linear model does not do a good job at accounting for variation in the data and predicting survival from age or passenger class.</em></p>
+<p><strong>Logistic Regression 1</strong></p>
+<pre class="r"><code>fit &lt;- glm(survived~Class+age, data=TitanicData, family=&quot;binomial&quot;)
+
+coeftest(fit)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) 3.1143174 0.3271266 9.5202 &lt; 2.2e-16 ***
+## Class -1.1014645 0.0955319 -11.5298 &lt; 2.2e-16 ***
+## age -0.0369915 0.0054638 -6.7703 1.286e-11 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coeftest(fit))</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##             Estimate Std. Error    z value Pr(&gt;|z|)
+## (Intercept) 22.51806    1.38698 13632.6118        1
+## Class        0.33238    1.10024     0.0000        1
+## age          0.96368    1.00548     0.0011        1</code></pre>
+<pre class="r"><code>TitanicData$prob &lt;- predict(fit,type=&quot;response&quot;)
+
+TitanicData$predicted &lt;- ifelse(TitanicData$prob&gt;.5,&quot;yes&quot;,&quot;no&quot;) 
+
+table(truth=TitanicData$survived, prediction=TitanicData$predicted)%&gt;%addmargins</code></pre>
+<pre><code>##      prediction
+## truth   no  yes  Sum
+##   no   504  115  619
+##   yes  210  217  427
+##   Sum  714  332 1046</code></pre>
+<pre class="r"><code>(504+217)/1046 # accuracy</code></pre>
+<pre><code>## [1] 0.6892925</code></pre>
+<pre class="r"><code>504/619 # sensitivity</code></pre>
+<pre><code>## [1] 0.8142165</code></pre>
+<pre class="r"><code>217/427 # specificity</code></pre>
+<pre><code>## [1] 0.5081967</code></pre>
+<pre class="r"><code>504/714 # precision</code></pre>
+<pre><code>## [1] 0.7058824</code></pre>
+<pre class="r"><code>library(plotROC)
+
+probs&lt;-predict(fit,type=&quot;response&quot;)
+
+Titanic_ROCplot&lt;-ggplot(TitanicData)+geom_roc(aes(d=y,m=probs), n.cuts=0) 
+
+Titanic_ROCplot</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(Titanic_ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.7180672</code></pre>
+<pre class="r"><code>TitanicData$logit&lt;-predict(fit,type=&quot;link&quot;)
+
+TitanicData%&gt;%ggplot()+geom_density(aes(logit,color=survived,fill=survived), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab(&quot;logit (log-odds)&quot;)+
+  geom_rug(aes(logit,color=survived))</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-6-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p><em>The exponentiated coefficients indicate that an increase in class (i.e. from 1-3) results in a 70% decrease in survival and an increase in age results in a 4% decrease in survival. The accuracy, sensitivity, specificity, precision, and AUC of the model are 0.689, 0.814, 0.508, 0.705, and 0.718. This AUC value indicates that the model is fair, so not really good or bad.</em></p>
+<p><strong>Logistic Regression, Cross Validation, and LASSO</strong></p>
+<pre class="r"><code>fit2 &lt;- glm(survived~sex*age*Class, TitanicData, family = &#39;binomial&#39;)
+
+coeftest(fit2)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) 6.8114944 1.6171413 4.2121 2.531e-05 ***
+## sexmale -5.6529168 1.7714767 -3.1911 0.0014174 **
+## age -0.0303018 0.0413556 -0.7327 0.4637332
+## Class -2.1536009 0.5747752 -3.7469 0.0001791 ***
+## sexmale:age 0.0030316 0.0456411 0.0664 0.9470422
+## sexmale:Class 1.6137188 0.6479188 2.4906 0.0127521 *
+## age:Class 0.0038237 0.0155386 0.2461 0.8056192
+## sexmale:age:Class -0.0127063 0.0181171 -0.7013 0.4830899
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coeftest(fit2))</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                     Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)       9.0823e+02 5.0387e+00 67.4954    1.000
+## sexmale           3.5073e-03 5.8795e+00  0.0411    1.001
+## age               9.7015e-01 1.0422e+00  0.4806    1.590
+## Class             1.1607e-01 1.7767e+00  0.0236    1.000
+## sexmale:age       1.0030e+00 1.0467e+00  1.0687    2.578
+## sexmale:Class     5.0215e+00 1.9116e+00 12.0687    1.013
+## age:Class         1.0038e+00 1.0157e+00  1.2790    2.238
+## sexmale:age:Class 9.8737e-01 1.0183e+00  0.4959    1.621</code></pre>
+<pre class="r"><code>TitanicData$prob &lt;- predict(fit2,type=&quot;response&quot;)
+
+TitanicData$predicted &lt;- ifelse(TitanicData$prob&gt;.5,&quot;yes&quot;,&quot;no&quot;) 
+
+table(truth=TitanicData$survived, prediction=TitanicData$predicted)%&gt;%addmargins</code></pre>
+<pre><code>##      prediction
+## truth   no  yes  Sum
+##   no   574   45  619
+##   yes  165  262  427
+##   Sum  739  307 1046</code></pre>
+<pre class="r"><code>(574+262)/1046 # accuracy</code></pre>
+<pre><code>## [1] 0.7992352</code></pre>
+<pre class="r"><code>574/619 # sensitivity</code></pre>
+<pre><code>## [1] 0.9273021</code></pre>
+<pre class="r"><code>262/427 # specificity</code></pre>
+<pre><code>## [1] 0.6135831</code></pre>
+<pre class="r"><code>574/739 # precision</code></pre>
+<pre><code>## [1] 0.7767253</code></pre>
+<pre class="r"><code>library(plotROC)
+
+probs&lt;-predict(fit2,type=&quot;response&quot;)
+
+Titanic_ROCplot&lt;-ggplot(TitanicData)+geom_roc(aes(d=y,m=probs), n.cuts=0) 
+
+Titanic_ROCplot</code></pre>
+<p><img src="../../project/project2_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(Titanic_ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.8474214</code></pre>
+<pre class="r"><code>set.seed(1234)
+k=10 #
+
+TitanicData&lt;-TitanicData[sample(nrow(TitanicData)),] 
+folds&lt;-cut(seq(1:nrow(TitanicData)),breaks=k,labels=F) 
+
+diags&lt;-NULL
+for(i in 1:k){
+  
+  train&lt;-TitanicData[folds!=i,] 
+  test&lt;-TitanicData[folds==i,]
+  
+  truth&lt;-test$y 
+  
+  fit2&lt;-glm(survived~sex*age*Class, TitanicData, family = &#39;binomial&#39;)
+  
+  probs&lt;-predict(fit2,newdata = test,type=&quot;response&quot;)
+  
+  diags&lt;-rbind(diags,class_diag(probs,truth))
+}
+
+
+summarize_all(diags,mean) </code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.7992766 0.6120558 0.9277851 0.8535731 0.8450346</code></pre>
+<pre class="r"><code>library(glmnet)
+y&lt;-as.matrix(TitanicData$survived) 
+x&lt;-model.matrix(survived~.,data=TitanicData)[,-1] 
+head(x)</code></pre>
+<pre><code>## sexmale age Class y age_c Class_c prob predictedyes
+## Vande Walle, Mr. Nestor Cyriel 1 28 3 0 -1.881135
+0.792543 0.12230649 0
+## Torber, Mr. Ernst William 1 44 3 0 14.118865 0.792543
+0.05554301 0
+## Boulos, Master. Akar 1 6 3 0 -23.881135 0.792543
+0.31333463 0
+## Oreskovic, Miss. Jelka 0 23 3 0 -6.881135 0.792543
+0.47940885 0
+## Canavan, Mr. Patrick 1 21 3 0 -8.881135 0.792543
+0.16891413 0
+## Petterson, Mr. Johan Emil 1 25 3 0 -4.881135 0.792543
+0.14075735 0
+## logit
+## Vande Walle, Mr. Nestor Cyriel -1.2258392
+## Torber, Mr. Ernst William -1.8177038
+## Boulos, Master. Akar -0.4120252
+## Oreskovic, Miss. Jelka -1.0408814
+## Canavan, Mr. Patrick -0.9668984
+## Petterson, Mr. Johan Emil -1.1148645</code></pre>
+<pre class="r"><code>cv&lt;-cv.glmnet(x,y,family=&quot;binomial&quot;)
+lasso&lt;-glmnet(x,y,family=&quot;binomial&quot;,lambda=cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 10 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                     s0
+## (Intercept)  -7.499477
+## sexmale       .       
+## age           .       
+## Class         .       
+## y            14.627466
+## age_c         .       
+## Class_c       .       
+## prob          .       
+## predictedyes  .       
+## logit         .</code></pre>
+<p><em>The new model has a higher AUC of 0.847 along with increased accuracy, sensitivity, specificity, and precision. Clearly there is an interaction between the variables of Class, Age, and Sex that is important. The 10-fold CV showed very similar values across the board with the exception of sensitivity having a decreased value. This cross validation indicates the model does well for out of sample classification. Performing a LASSO regression on the data set reveals that the only significant predictor is y, the numeric variable created to classify if a passenger survived or not. This essentially means that none of the variables (sex, age, Class) can be retained as ‘good’ predictors of survival. This makes some inherent sense as it is hard to imagine that which class, age, or sex a passenger had would have any real impact on them surviving a monumental crash of a cruise ship. As none of the variables were selected as signifciant, no additional cross validation was performed.</em></p>
+<p><strong>Conclusion</strong></p>
+<p><em>In conclusion, it appears that none of the passenger variables (sex, class, age) had a significant impact on who survived the Titanic. At first, the linear regression model appeared to predict passenger survival from class however additional cross validation via logistic regression and LASSO regression showed this not to be the case. Overall this was an interesting investigation that revealed the different levels of prediction power for models that can easily be performed in R.</em></p>
+<pre><code>## R version 3.6.1 (2019-07-05)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Ubuntu 18.04.5 LTS
+##
+## Matrix products: default
+## BLAS: /stor/system/opt/R/R-3.6.1/lib/R/lib/libRblas.so
+## LAPACK:
+/stor/system/opt/R/R-3.6.1/lib/R/lib/libRlapack.so
+##
+## locale:
+## [1] LC_CTYPE=en_US.UTF-8 LC_NUMERIC=C
+LC_TIME=en_US.UTF-8
+## [4] LC_COLLATE=en_US.UTF-8 LC_MONETARY=en_US.UTF-8
+LC_MESSAGES=en_US.UTF-8
+## [7] LC_PAPER=en_US.UTF-8 LC_NAME=C LC_ADDRESS=C
+## [10] LC_TELEPHONE=C LC_MEASUREMENT=en_US.UTF-8
+LC_IDENTIFICATION=C
+##
+## attached base packages:
+## [1] stats graphics grDevices utils datasets methods base
+##
+## other attached packages:
+## [1] glmnet_4.0-2 Matrix_1.3-2 plotROC_2.2.1
+lmtest_0.9-38 zoo_1.8-8 sandwich_3.0-0
+## [7] forcats_0.5.1 stringr_1.4.0 dplyr_1.0.6 purrr_0.3.4
+readr_1.4.0 tidyr_1.1.3
+## [13] tibble_3.1.1 ggplot2_3.3.3 tidyverse_1.3.1
+knitr_1.30
+##
+## loaded via a namespace (and not attached):
+## [1] httr_1.4.2 jsonlite_1.7.2 splines_3.6.1
+foreach_1.5.1 carData_3.0-4
+## [6] modelr_0.1.8 assertthat_0.2.1 cellranger_1.1.0
+yaml_2.2.1 pillar_1.6.0
+## [11] backports_1.2.1 lattice_0.20-41 glue_1.4.2
+digest_0.6.27 rvest_1.0.0
+## [16] colorspace_2.0-0 htmltools_0.5.0 plyr_1.8.6
+pkgconfig_2.0.3 broom_0.7.6
+## [21] haven_2.3.1 bookdown_0.21 scales_1.1.1 mgcv_1.8-33
+generics_0.1.0
+## [26] farver_2.0.3 ellipsis_0.3.1 withr_2.3.0 cli_2.5.0
+survival_3.2-7
+## [31] magrittr_2.0.1 crayon_1.4.1 readxl_1.3.1
+evaluate_0.14 fs_1.5.0
+## [36] fansi_0.4.1 nlme_3.1-151 xml2_1.3.2 blogdown_0.20
+tools_3.6.1
+## [41] hms_1.0.0 lifecycle_1.0.0 munsell_0.5.0
+reprex_2.0.0 compiler_3.6.1
+## [46] rlang_0.4.10 grid_3.6.1 iterators_1.0.13
+rstudioapi_0.13 labeling_0.4.2
+## [51] rmarkdown_2.6 gtable_0.3.0 codetools_0.2-18
+DBI_1.1.0 R6_2.5.0
+## [56] lubridate_1.7.10 utf8_1.1.4 shape_1.4.5
+stringi_1.5.3 Rcpp_1.0.5
+## [61] vctrs_0.3.6 dbplyr_2.1.1 tidyselect_1.1.0 xfun_0.22</code></pre>
+<pre><code>## [1] &quot;2021-05-07 10:45:23 CDT&quot;</code></pre>
+<pre><code>## sysname release
+## &quot;Linux&quot; &quot;4.15.0-142-generic&quot;
+## version nodename
+## &quot;#146-Ubuntu SMP Tue Apr 13 01:11:19 UTC 2021&quot;
+&quot;educcomp02.ccbb.utexas.edu&quot;
+## machine login
+## &quot;x86_64&quot; &quot;unknown&quot;
+## user effective_user
+## &quot;kjj865&quot; &quot;kjj865&quot;</code></pre>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

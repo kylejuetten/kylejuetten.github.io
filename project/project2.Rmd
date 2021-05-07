@@ -1,0 +1,307 @@
+---
+title: "Examining survival of Titanic passengers"
+author: "Kyle Juetten"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+
+class_diag <- function(probs,truth){ 
+  #CONFUSION MATRIX: CALCULATE ACCURACY, TPR, TNR, PPV 
+  if(is.character(truth)==TRUE) truth<-as.factor(truth) 
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1 
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),factor(truth, levels=c(0,1))) 
+  acc=sum(diag(tab))/sum(tab) 
+  sens=tab[2,2]/colSums(tab)[2] 
+  spec=tab[1,1]/colSums(tab)[1] 
+  ppv=tab[2,2]/rowSums(tab)[2] 
+  
+#CALCULATE EXACT AUC 
+  ord<-order(probs, decreasing=TRUE) 
+  probs <- probs[ord]; truth <- truth[ord] 
+  TPR=cumsum(truth)/max(1,sum(truth))  
+  FPR=cumsum(!truth)/max(1,sum(!truth)) 
+  dup <-c(probs[-1]>=probs[-length(probs)], FALSE) 
+  TPR <-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1) 
+  n <- length(TPR) 
+  auc <- sum(((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n])) 
+  data.frame(acc,sens,spec,ppv,auc) 
+}
+
+```
+
+### Kyle Juetten, kjj865
+
+
+**Introduction**
+
+*In this data analysis project I am interested in examining if there are any trends as to who survived the incident with the Titanic. The 5 variables in this data set are the name of the passenger, whether they survived or not (binary), the sex of the passenger, the age (numeric), and what class they were in (numeric). There are 1309 observations in total. I anticipate some sort of trend for those who survived pertaining to either the age of the passengers, the passenger class, or both. I do not anticipate the sex of the passenger having an impact on this trend. * 
+
+
+```{r}
+TitanicData <- carData::TitanicSurvival
+
+head(TitanicData)
+
+TitanicData <- TitanicData %>% mutate(Class = as.numeric(TitanicData$passengerClass)) %>% select(-4) %>% na.omit()
+
+TitanicData <- TitanicData%>%mutate(y=ifelse(survived == 'yes',1,0))
+
+
+```
+
+
+**MANOVA**
+
+```{r}
+man1 <- manova(cbind(age,Class)~survived, data = TitanicData)
+
+summary(man1)
+
+summary.aov(man1)
+
+TitanicData%>%group_by(survived)%>%summarize(mean(age),mean(Class))
+
+pairwise.t.test(TitanicData$age,TitanicData$survived, p.adj="none")
+
+pairwise.t.test(TitanicData$Class,TitanicData$survived, p.adj="none")
+```
+
+*From the results of the MANOVA it appeared that at least one of the numeric variables (age or Class) had a significant correlation with survival (p < 0.05). Univariate ANOVA anlaysis showed that there was a significant mean difference for the class of those who survived and those who did not. This significance did not carry over to the age of the passengers. It is highly likely the a type 1 error was made in this analysis as the MANOVA assumes linear relationships among variables as well as homegeneity of within-group covariances which is not met in this dataset. An adjusted bonferroni alpha of 0.05/2 = 0.025 should be used to maintain an alpha level of 0.05. 1 MANOVA, 1 ANOVA, and 2 t-tests were performed bringing the total to 4 tests of significance.*
+
+
+**Randomization**
+
+```{r}
+TitanicData %>% group_by(survived) %>% summarize(means = mean(Class)) %>% summarize(mean_diff = diff(means))
+
+
+random_dist_Class<-vector() 
+
+for(i in 1:5000){
+new<-data.frame(Class=sample(TitanicData$Class),
+                survived=sample(TitanicData$survived)) 
+                                 
+random_dist_Class[i]<-mean(new[new$survived=="yes",]$Class)-   
+              mean(new[new$survived =="no",]$Class)}
+
+{hist(random_dist_Class,main="",ylab=""); abline(v = c(-0.5484369	, 0.5484369),col="red")}
+
+mean(random_dist_Class>0.5484369| random_dist_Class< -0.5484369)
+
+
+TitanicData %>% group_by(survived) %>% summarize(means = mean(age)) %>% summarize(mean_diff = diff(means))
+
+
+random_dist_age<-vector() 
+
+for(i in 1:5000){
+new2<-data.frame(age=sample(TitanicData$age),
+                survived=sample(TitanicData$survived)) 
+                                 
+random_dist_age[i]<-mean(new2[new2$survived=="yes",]$age)-   
+              mean(new2[new2$survived =="no",]$age)}
+
+{hist(random_dist_age,main="",ylab=""); abline(v = c(-1.627141		, 1.627141),col="red")}
+
+mean(random_dist_age>1.627141| random_dist_age< -1.627141	)
+
+
+```
+
+*Based off the results of the two tailed p-test, the probability of the Class difference between those who survived and those who did not randomly being as large as it is is 0. This means it is extremely unlikely for this to happen by chance and is in agreement with the t-test. The same analysis was performed looking at the differences in age between those who survived and those who did not. The resulting two tailed p-test gave a probability of 0.06 which is not significant and in agreement with the t-test performed earlier. *
+
+
+**Linear Regression**
+
+```{r}
+
+library(sandwich)
+library(lmtest)
+
+TitanicData$age_c <- TitanicData$age - mean(TitanicData$age, na.rm=T)
+
+TitanicData$Class_c <- TitanicData$Class - mean(TitanicData$Class, na.rm=T)
+
+LinearModel <- lm(y~Class_c*age_c, data = TitanicData)
+
+summary(LinearModel)
+
+TitanicData %>% select(age_c, Class_c, survived) %>% ggplot(aes(age_c, Class_c, color=survived)) + 
+geom_point()+geom_smooth(method="lm") 
+
+
+bptest(LinearModel)
+
+summary(LinearModel)$coef[, 1:2]
+
+coeftest(LinearModel,vcov=vcovHC(LinearModel))
+
+```
+
+*The coefficients from the linear model state that for every 1 unit increase in y (survival) the Class_C decreases by 0.24. This essentially means those in the higher classes were more likely to survive. This same correlation with survival rate increasing as age decreases is also shown, although less prevalent. The slope of Class_c on survival is 0.0003 times greater than for age_c. The Breush-Pagan test revealed a p-value of 2.559 e-05 indicating that homoskedacity is not met and we reject the null hypothesis. The R^2 value indicates that our model accounts for 14% of the variation in the data. Regression results were recomputed using standard errors. The p-values changed very little across the board. No changes in significance were made from this recalculation.*
+
+**Bootstrapped Standard Errors**
+
+```{r}
+
+Titanic_bootstrap <-sample_frac(TitanicData, replace=T)
+
+Titanic_distn <- replicate(5000, {
+  Titanic_bootstrap <- sample_frac(TitanicData, replace=T)
+  Titanic_fit <- lm(y~Class_c*age_c, data = Titanic_bootstrap)
+  coef(Titanic_fit)
+})
+
+Titanic_distn %>% t %>% as.data.frame %>% summarize_all(sd)
+
+
+```
+
+*The coefficients from the bootstrapped standard errors were very different than those computed with the standard and robust SE's. All of the new coefficients had positive values. From this information it is likely that the linear model does not do a good job at accounting for variation in the data and predicting survival from age or passenger class.*
+
+
+**Logistic Regression 1**
+
+```{r}
+
+fit <- glm(survived~Class+age, data=TitanicData, family="binomial")
+
+coeftest(fit)
+
+exp(coeftest(fit))
+
+TitanicData$prob <- predict(fit,type="response")
+
+TitanicData$predicted <- ifelse(TitanicData$prob>.5,"yes","no") 
+
+table(truth=TitanicData$survived, prediction=TitanicData$predicted)%>%addmargins
+
+(504+217)/1046 # accuracy
+504/619 # sensitivity
+217/427 # specificity
+504/714 # precision
+
+library(plotROC)
+
+probs<-predict(fit,type="response")
+
+Titanic_ROCplot<-ggplot(TitanicData)+geom_roc(aes(d=y,m=probs), n.cuts=0) 
+
+Titanic_ROCplot
+
+calc_auc(Titanic_ROCplot)
+
+TitanicData$logit<-predict(fit,type="link")
+
+TitanicData%>%ggplot()+geom_density(aes(logit,color=survived,fill=survived), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab("logit (log-odds)")+
+  geom_rug(aes(logit,color=survived))
+
+```
+
+*The exponentiated coefficients indicate that an increase in class (i.e. from 1-3) results in a 70% decrease in survival and an increase in age results in a 4% decrease in survival. The accuracy, sensitivity, specificity, precision, and AUC of the model are 0.689, 0.814, 0.508, 0.705, and 0.718. This AUC value indicates that the model is fair, so not really good or bad.*
+
+
+**Logistic Regression, Cross Validation, and LASSO**
+
+```{r}
+fit2 <- glm(survived~sex*age*Class, TitanicData, family = 'binomial')
+
+coeftest(fit2)
+
+exp(coeftest(fit2))
+
+TitanicData$prob <- predict(fit2,type="response")
+
+TitanicData$predicted <- ifelse(TitanicData$prob>.5,"yes","no") 
+
+table(truth=TitanicData$survived, prediction=TitanicData$predicted)%>%addmargins
+
+(574+262)/1046 # accuracy
+574/619 # sensitivity
+262/427 # specificity
+574/739 # precision
+
+library(plotROC)
+
+probs<-predict(fit2,type="response")
+
+Titanic_ROCplot<-ggplot(TitanicData)+geom_roc(aes(d=y,m=probs), n.cuts=0) 
+
+Titanic_ROCplot
+
+calc_auc(Titanic_ROCplot)
+
+
+
+set.seed(1234)
+k=10 #
+
+TitanicData<-TitanicData[sample(nrow(TitanicData)),] 
+folds<-cut(seq(1:nrow(TitanicData)),breaks=k,labels=F) 
+
+diags<-NULL
+for(i in 1:k){
+  
+  train<-TitanicData[folds!=i,] 
+  test<-TitanicData[folds==i,]
+  
+  truth<-test$y 
+  
+  fit2<-glm(survived~sex*age*Class, TitanicData, family = 'binomial')
+  
+  probs<-predict(fit2,newdata = test,type="response")
+  
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+
+
+summarize_all(diags,mean) 
+
+
+library(glmnet)
+y<-as.matrix(TitanicData$survived) 
+x<-model.matrix(survived~.,data=TitanicData)[,-1] 
+head(x)
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+```
+
+*The new model has a higher AUC of 0.847 along with increased accuracy, sensitivity, specificity, and precision. Clearly there is an interaction between the variables of Class, Age, and Sex that is important. The 10-fold CV showed very similar values across the board with the exception of sensitivity having a decreased value. This cross validation indicates the model does well for out of sample classification. Performing a LASSO regression on the data set reveals that the only significant predictor is y, the numeric variable created to classify if a passenger survived or not. This essentially means that none of the variables (sex, age, Class) can be retained as 'good' predictors of survival. This makes some inherent sense as it is hard to imagine that which class, age, or sex a passenger had would have any real impact on them surviving a monumental crash of a cruise ship. As none of the variables were selected as signifciant, no additional cross validation was performed.*
+
+**Conclusion**
+
+*In conclusion, it appears that none of the passenger variables (sex, class, age) had a significant impact on who survived the Titanic. At first, the linear regression model appeared to predict passenger survival from class however additional cross validation via logistic regression and LASSO regression showed this not to be the case. Overall this was an interesting investigation that revealed the different levels of prediction power for models that can easily be performed in R.*
+
+
+```{R, echo=F}
+sessionInfo()
+Sys.time()
+Sys.info()
+```
